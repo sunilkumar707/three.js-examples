@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Three.JS - First scene, materials light, animation example</title>
+    <script type="text/javascript" src="../js/three.min.js"></script>
+    <script type="text/javascript" src="../js/ParametricGeometries.js"></script>
+    <script type="text/javascript" src="../js/ConvexGeometry.js"></script>
+    <style>
+        body {
+            margin: 0;
+            overflow: hidden;
+        }
+    </style>
+</head>
+<body>
+
+<!-- Div which will hold the Output -->
+<div id="webGL-Container"></div>
+
+<!-- Javascript code that runs our Three.js examples -->
+<script type="text/javascript">
+    // Once everything loaded we run the Three.JS stuff
+    function init(){
+
+        // Create as scene, that will hold all our elements such as object, camera and light
+        var scene = new THREE.Scene();
+
+        // Create a camera, which define where we're looking at.
+        var camera = new THREE.PerspectiveCamera(45, window.innerWidth/window.innerHeight, 0.1, 1000);
+
+        // Create a render and set the size
+        var renderer = new THREE.WebGLRenderer();
+
+        renderer.setClearColor(new THREE.Color(0xCCCCCC, 1.0));
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        renderer.shadowMapEnabled = true;
+
+        //PlaneGeometry(width, height, widthSegments, heightSegments)
+        var planeGeometry = new THREE.PlaneGeometry(60, 40);
+        //MeshLambertMaterial(parameters)
+        var planeMaterial = new THREE.MeshLambertMaterial({color: 0xffffff});
+        var plane = new THREE.Mesh(planeGeometry, planeMaterial);
+        plane.receiveShadow = true;
+
+        // plane rotation and position
+        plane.rotation.x = -0.5 * Math.PI;
+        plane.position.x = 0;
+        plane.position.y = 0;
+        plane.position.z = 0;
+        scene.add(plane);
+
+        // Position camera
+        camera.position.x = -50;
+        camera.position.y = 30;
+        camera.position.z = 20;
+        camera.lookAt(new THREE.Vector3(-10, 0, 0));
+
+        // Add ambient Light to scene
+        var ambientLight = new THREE.AmbientLight(0x090909);
+        scene.add(ambientLight);
+
+        // Add spotLight to scene
+        var spotLight = new THREE.SpotLight(0xffffff);
+        spotLight.position.set(-40, 40, 50);
+        spotLight.castShadow = true;
+        scene.add(spotLight);
+
+
+        addGeometry(scene);
+
+        function addGeometry(scene){
+            var geoms = [];
+
+            geoms.push(new THREE.CylinderGeometry(1, 4, 4));
+            // basic cube
+            geoms.push(new THREE.BoxGeometry(2, 2, 2));
+
+            // basic spherer
+            geoms.push(new THREE.SphereGeometry(2));
+
+            geoms.push(new THREE.IcosahedronGeometry(4));
+
+            // create a convex shape (a shape without dents)
+            // using a couple of points
+            // for instance a cube
+            var points = [
+                new THREE.Vector3(2, 2, 2),
+                new THREE.Vector3(2, 2, -2),
+                new THREE.Vector3(-2, 2, -2),
+                new THREE.Vector3(-2, 2, 2),
+                new THREE.Vector3(2, -2, 2),
+                new THREE.Vector3(2, -2, -2),
+                new THREE.Vector3(-2, -2, -2),
+                new THREE.Vector3(-2, -2, 2)
+            ];
+            geoms.push(new THREE.ConvexGeometry(points));
+
+
+            // create a OctahedronGeometry
+            geoms.push(new THREE.OctahedronGeometry(3));
+
+            // create a geometry based on a function
+            geoms.push(new THREE.ParametricGeometry(THREE.ParametricGeometries.mobius3d, 20, 10));
+
+            //
+            geoms.push(new THREE.TetrahedronGeometry(3));
+
+            geoms.push(new THREE.TorusGeometry(3, 1, 10, 10));
+
+            geoms.push(new THREE.TorusKnotGeometry(3, 0.5, 50, 20));
+
+
+            var j = 0;
+            for(var i = 0; i < geoms.length; i++ ){
+                var materials = [
+
+                    new THREE.MeshLambertMaterial({color: Math.random() * 0xffffff, shading: THREE.FlatShading}),
+                    new THREE.MeshBasicMaterial({color: 0x000000, wireframe: true})
+
+                ];
+
+                var mesh = THREE.SceneUtils.createMultiMaterialObject(geoms[i], materials);
+                mesh.traverse(function (e) {
+                    e.castShadow = true
+                });
+
+                //var mesh = new THREE.Mesh(geoms[i],materials[i]);
+                //mesh.castShadow=true;
+                mesh.position.x = -24 + ((i % 4) * 12);
+                mesh.position.y = 4;
+                mesh.position.z = -8 + (j * 12);
+
+                if ((i + 1) % 4 == 0) j++;
+                scene.add(mesh);
+            }
+
+        }
+
+        // add the output of the renderer to the html element
+        document.getElementById("webGL-Container").appendChild(renderer.domElement);
+
+        renderScene();
+
+        // Animation
+        function renderScene(){
+            // render using requestAnimationFrame
+            requestAnimationFrame(renderScene);
+            renderer.render(scene, camera);
+        }
+    }
+    window.onload = init();
+</script>
+
+</body>
+</html>
